@@ -1,6 +1,6 @@
 // CONSTANTS
-var COLS = 15, // EACH CELL ARE 60 PX
-	ROWS = 15;
+var COLS = 20, // EACH CELL ARE 30 PX
+	ROWS = 20;
 // OBJECT INDEX
 var EMPTY = 0,
 	PLAYER = 1,
@@ -9,6 +9,13 @@ var EMPTY = 0,
 	BOMBLINE = 4;
 var canvas = document.getElementById("canvas"),
 	ctx = canvas.getContext("2d");
+// Key codes:
+var LEFT = 37,
+	UP = 38,
+	RIGHT = 39,
+	DOWN = 40;
+
+
 
 var grid = {
 	width: null,
@@ -26,44 +33,80 @@ var grid = {
 				this._grid[i].push(dir);
 			}
 		}
+		this._grid = [this._grid, this._grid];
 	},
 
-	set: function(x, y, val) {
-		this._grid[x][y] = val;
+	set: function(layer, x, y, val) {
+		this._grid[layer][x][y] = val;
 	},
-	get: function(x, y) {
-		return this._grid[x][y];
+	get: function(layer, x, y) {
+		return this._grid[layer][x][y];
 	}
 };
 // This is already OK
 
 var player = {
+	x: null,
+	y: null,
 
 	init: function() {
-		/* body... */
+		this.x = 0;
+		this.y = 0;
 	},
-	move: function() {
-		/* body... */
+	move: function(direction) {
+		switch (direction) {
+			case UP:
+				if (this.y === 0) {
+					break;
+				}
+				grid.set(1, this.x, this.y, EMPTY);
+				this.y--;
+				grid.set(1, this.x, this.y, PLAYER);
+				break;
+			case DOWN:
+				if (this.y === grid.height - 1) {
+					break;
+				}
+				grid.set(1, this.x, this.y, EMPTY);
+				this.y++;
+				grid.set(1, this.x, this.y, PLAYER);
+				break;
+			case RIGHT:
+				if (this.x === grid.width - 1) {
+					break;
+				}
+				grid.set(1, this.x, this.y, EMPTY);
+				this.x++;
+				grid.set(1, this.x, this.y, PLAYER);
+				break;
+			case LEFT:
+				if (this.x === 0) {
+					break;
+				}
+				grid.set(1, this.x, this.y, EMPTY);
+				this.x--;
+				grid.set(1, this.x, this.y, PLAYER);
+				break;
+		}
 	},
 	setBomb: function() {
 		/* body... */ //Later
 	}
 };
-var bomb = {
-	//Later
-};
+
+function Bomb(argument) {
+	// body...
+}
 
 
 /*	
  *GAME Objects
  */
-var canvas = document.getElementById("canvas"),
-	ctx = canvas.getContext("2d"),
-	keystate, frames, score, paused;
+var dir, keystate, frames, score, paused;
 
-// Some nonsense function about pause and unpause and pressing key
+// Some functions about pause and unpause and pressing key
 
-function pause(argument) {
+function pause() {
 	if (!paused) {
 		document.removeEventListener('keydown', pressKey);
 		paused = true;
@@ -75,7 +118,7 @@ function pause(argument) {
 }
 
 function pressKey(evt) {
-	keystate[evt.keyCode] = true;
+	player.move(evt.keyCode);
 }
 
 function pauseKey(evt) {
@@ -87,19 +130,16 @@ function pauseKey(evt) {
 //End of those
 
 function main() {
+	player.init();
 	paused = false;
 	canvas = document.getElementById("canvas");
-	canvas.width = 30* COLS;
-	canvas.height = 30* ROWS;
+	canvas.width = 30 * COLS; //30px each cell
+	canvas.height = 30 * ROWS; //30px each cell
 	ctx = canvas.getContext("2d");
 
 	frames = 0;
-	keystate = {};
 
 	document.addEventListener('keydown', pressKey);
-	document.addEventListener('keyup', function(evt) {
-		delete keystate[evt.keyCode];
-	});
 
 	init();
 	loop();
@@ -141,6 +181,7 @@ function draw() {
 					break;
 				case PLAYER:
 					ctx.fillStyle = 'blue'; // draw sprite
+					//ctx.drawImage()
 					break;
 				case WALL:
 					ctx.fillStyle = 'black'; //draw sprite
